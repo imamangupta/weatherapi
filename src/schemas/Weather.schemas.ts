@@ -3,7 +3,7 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 @Schema()
 export class Weather {
 
-    @Prop({ required: true })
+    @Prop({ required: false })
     description: string;
 
     @Prop({ required: false })
@@ -20,6 +20,9 @@ export class Weather {
 
     @Prop({ required: false })
     visibility?: string;
+
+    @Prop({ default: Date.now })
+    createdAt: Date;
 
 }
 

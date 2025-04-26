@@ -3,7 +3,7 @@ import { WeatherService } from './weather.service';
 
 @Controller('weather')
 export class WeatherController {
-    constructor(private readonly weatherService: WeatherService) { }
+    constructor(private weatherService: WeatherService) { }
     
     @Get()
     getWeatherById(@Query('place') place: string) {

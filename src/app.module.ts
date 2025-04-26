@@ -1,15 +1,12 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { WeatherController } from './weather/weather.controller';
 import { WeatherModule } from './weather/weather.module';
-import { WeatherService } from './weather/weather.service';
+import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
-  imports: [WeatherModule],
-  controllers: [AppController, WeatherController],
-  providers: [AppService, WeatherService],
-
+  imports: [ WeatherModule, MongooseModule.forRoot('mongodb+srv://amanwebdevv:4QH6NQrvaUBAzTcA@cluster0.g8atonj.mongodb.net/nestjs_tutorial'),
+    ],
+  controllers: [],
+  providers: [],
 })
 
 export class AppModule {}
