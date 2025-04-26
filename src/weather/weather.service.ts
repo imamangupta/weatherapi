@@ -1,12 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable,Inject  } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { Cache } from 'cache-manager';
 import { Model } from 'mongoose';
 import { Weather } from 'src/schemas/Weather.schemas';
 
 @Injectable()
 export class WeatherService {
 
-    constructor(@InjectModel(Weather.name) private weatherModel: Model<Weather>,) { }
+    constructor(@InjectModel(Weather.name) private weatherModel: Model<Weather>,
+    @Inject('CACHE_MANAGER') private cacheManager: Cache) { }
 
     async getWeatherById(place: string) {
         try {
@@ -33,6 +35,7 @@ export class WeatherService {
             console.log(weatherData);
             const newWeather = new this.weatherModel(weatherData);
             const savedWeather = await newWeather.save();
+            await this.cacheManager.del('weatherHistory');
 
             return `Weather Data Added: ${JSON.stringify(savedWeather)}`;
 
@@ -44,6 +47,13 @@ export class WeatherService {
 
     async getHistory() {
         try {
+
+            const cacheData = await this.cacheManager.get('weatherHistory');
+            if (cacheData) {
+                console.log('Cache Hit:', cacheData);
+                return cacheData;
+            }
+            console.log('Cache Miss, Fetching from DB...');
         
             const oneHourAgo = new Date();
             oneHourAgo.setHours(oneHourAgo.getHours() - 1);
@@ -55,6 +65,8 @@ export class WeatherService {
             const recentWeatherData = await this.weatherModel.find({
                 createdAt: { $gte: oneHourAgo }
             });
+
+            await this.cacheManager.set('weatherHistory', recentWeatherData);
 
             return recentWeatherData;
         } catch (error) {
@@ -75,7 +87,7 @@ export class WeatherService {
             if (!updatedWeather) {
                 throw new Error(`Weather record with ID ${id} not found`);
             }
-
+            await this.cacheManager.del('weatherHistory');
             console.log('Updated weather data:', updatedWeather);
             return updatedWeather;
         } catch (error) {
@@ -84,7 +96,8 @@ export class WeatherService {
         }
     }
 
-    deleteWeatherById(id: string) {
+    async deleteWeatherById(id: string) {
+        await this.cacheManager.del('weatherHistory');
         return this.weatherModel.findByIdAndDelete(id);
     }
 

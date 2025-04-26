@@ -1,9 +1,14 @@
-import { Body, Controller, Delete, Get, Param, Patch, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Query, UseInterceptors } from '@nestjs/common';
 import { WeatherService } from './weather.service';
+import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
 
+// @UseInterceptors(CacheInterceptor)
 @Controller('weather')
 export class WeatherController {
     constructor(private weatherService: WeatherService) { }
+    
+    // @CacheTTL(0)
+    // @CacheKey('weatherHistory')
     
     @Get()
     getWeatherById(@Query('place') place: string) {
