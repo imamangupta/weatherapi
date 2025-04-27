@@ -23,20 +23,18 @@ export class WeatherService {
         @Inject('CACHE_MANAGER') private cacheManager: Cache) { }
 
 
-
-
+    // New Routes Services
     async getWeatherByCity(city: string) {
         try {
             console.log(`Adding weather data for ${city}`);
-            
             const cacheData = await this.cacheManager.get<{ createdAt: string }>(city);
 
             if (cacheData) {
-    
+
                 const dataCreationTime = new Date(cacheData.createdAt).getTime();
                 const currentTime = new Date().getTime();
-                const sixHoursInMs = 6 * 60 * 60 * 1000; 
-                
+                const sixHoursInMs = 6 * 60 * 60 * 1000;
+
                 if (currentTime - dataCreationTime < sixHoursInMs) {
                     console.log('Cache Hit (current):', cacheData);
                     return cacheData;
@@ -69,15 +67,11 @@ export class WeatherService {
             await this.cacheManager.set(city, savedWeather);
 
             return savedWeather;
-
         } catch (error) {
             console.error('Error When Getting Weather Data:', error);
             throw new HttpException("No data found for the city.", HttpStatus.NOT_FOUND);
         }
     }
-
-
-
 
     async deleteWeatherByCity(city: string) {
         try {
@@ -85,35 +79,30 @@ export class WeatherService {
             await this.cacheManager.del(city);
 
             const weatherData = await this.weatherModel.findOneAndDelete({ place: city });
-            if (!weatherData) { 
+            if (!weatherData) {
                 throw new HttpException("No data found for the city.", HttpStatus.NOT_FOUND);
             }
-          
-            return {status: true, message: "Weather data deleted successfully.", data: city};
 
+            return { status: true, message: "Weather data deleted successfully.", data: city };
         } catch (error) {
             console.error('Error When Getting Weather Data:', error);
             throw new HttpException("No data found for the city.", HttpStatus.NOT_FOUND);
         }
     }
 
-
-
-    
-
     async updateWeatherByCity(city: string) {
         try {
             console.log(`Updating weather data for ${city}`);
             await this.cacheManager.del(city);
-            
+
             const response = await fetch(
                 `${process.env.WEATHER_URL}?q=${city}&appid=${process.env.WEATHER_API_KEY}&units=metric`
             );
-    
+
             if (!response.ok) {
                 throw new Error(`Weather API error: ${response.statusText}`);
             }
-            
+
             const weatherApiData = await response.json();
             const weatherData: WeatherData = {
                 description: weatherApiData.weather[0].description,
@@ -123,21 +112,20 @@ export class WeatherService {
                 place: weatherApiData.name,
                 visibility: `${weatherApiData.visibility / 1000} km`
             };
-            
+
             const updatedWeather = await this.weatherModel.findOneAndUpdate(
                 { place: city },
                 weatherData
-               
             );
-            
+
             await this.cacheManager.set(city, weatherData);
-          
+
             return {
-                status: true, 
-                message: "Weather data updated successfully.", 
+                status: true,
+                message: "Weather data updated successfully.",
                 data: updatedWeather
             };
-    
+
         } catch (error) {
             console.error('Error when updating weather data:', error);
             throw new HttpException("Failed to update weather data for the city.", HttpStatus.NOT_FOUND);
@@ -149,7 +137,7 @@ export class WeatherService {
 
 
 
-
+    // Previous code
 
     async getWeatherById(place: string) {
         try {

@@ -7,8 +7,8 @@ import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
 @Controller('weather')
 export class WeatherController {
     constructor(private weatherService: WeatherService) { }
-    
-   
+
+    // New Routes 
     @Get("get")
     getWeatherByCity(@Query('city') city: string) {
         return this.weatherService.getWeatherByCity(city);
@@ -24,12 +24,12 @@ export class WeatherController {
         return this.weatherService.updateWeatherByCity(city);
     }
 
-
+    // previous code
     @Get()
     getWeatherById(@Query('place') place: string) {
         return this.weatherService.getWeatherById(place);
     }
-    
+
     // @CacheKey('weatherHistory')
     // @Get("history")
     getHistory() {

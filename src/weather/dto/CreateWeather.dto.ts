@@ -1,27 +1,27 @@
 import {
-    IsNotEmpty,
-    IsString,
-  } from 'class-validator';
+  IsNotEmpty,
+  IsString,
+} from 'class-validator';
 
 export class CreateWeatherDto {
-    
-    @IsString()
-    description?: string;
-    
-    @IsNotEmpty()
-    @IsString()
-    temperature?: string;
 
-    @IsString()
-    humidity?: string;
+  @IsString()
+  description?: string;
 
-    @IsString()
-    windSpeed?: string;
-    
-    @IsNotEmpty()
-    @IsString()
-    place?: string;
-    
-    @IsString()
-    visibility?: string;
+  @IsNotEmpty()
+  @IsString()
+  temperature?: string;
+
+  @IsString()
+  humidity?: string;
+
+  @IsString()
+  windSpeed?: string;
+
+  @IsNotEmpty()
+  @IsString()
+  place?: string;
+
+  @IsString()
+  visibility?: string;
 }
