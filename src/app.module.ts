@@ -31,7 +31,7 @@ import { redisStore } from 'cache-manager-redis-store';
             host: 'localhost',
             port: 6379,
           },
-          ttl: 60000, // milliseconds
+          ttl: 0, // milliseconds
         }),
       }),
     }),
