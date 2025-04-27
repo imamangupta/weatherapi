@@ -5,33 +5,24 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CacheModule } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-redis-yet';
-// import { config } from 'process';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import config from './config';
 // import { redisStore } from 'cache-manager-redis-store';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      expandVariables: true,
+    }),
     WeatherModule, 
-    MongooseModule.forRoot('mongodb+srv://amanwebdevv:4QH6NQrvaUBAzTcA@cluster0.g8atonj.mongodb.net/nestjs_tutorial'),
-    // ConfigModule.forRoot({
-    //   load: [config],
-    //   isGlobal: true,
-    // }),
-    // CacheModule.registerAsync({
-    //   isGlobal: true,
-    //   imports: [ConfigModule],
-    //   useFactory: async (config) => {
-    //     const store = await redisStore({
-    //       socket:{
-    //         host: config.get('redis.host'),
-    //         port: config.get('redis.port'),
-    //       }
-    //     });
-    //     return {store,ttl: 5, max: 100};
-    //   },
-    //  inject: [ConfigService],
-    // })
+    // MongooseModule.forRoot(process.env.MONGODB_URL),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        uri: configService.get('MONGODB_URL'),
+      }),
+    }),
     CacheModule.register({
       isGlobal: true,
       useFactory: async () => ({

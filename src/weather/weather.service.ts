@@ -1,4 +1,4 @@
-import { Injectable,Inject  } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Cache } from 'cache-manager';
 import { Model } from 'mongoose';
@@ -8,13 +8,13 @@ import { Weather } from 'src/schemas/Weather.schemas';
 export class WeatherService {
 
     constructor(@InjectModel(Weather.name) private weatherModel: Model<Weather>,
-    @Inject('CACHE_MANAGER') private cacheManager: Cache) { }
+        @Inject('CACHE_MANAGER') private cacheManager: Cache) { }
 
     async getWeatherById(place: string) {
         try {
             console.log("inside service add");
             const response = await fetch(
-                `https://api.openweathermap.org/data/2.5/weather?q=${place}&appid=c38c2ab810a1f5c88861c5b2659d9a5b&units=metric`
+                `https://api.openweathermap.org/data/2.5/weather?q=${place}&appid=${process.env.WEATHER_API_KEY}&units=metric`
             );
 
             if (!response.ok) {
@@ -37,7 +37,7 @@ export class WeatherService {
             const savedWeather = await newWeather.save();
             await this.cacheManager.del('weatherHistory');
 
-            return {status: true, data:savedWeather};
+            return { status: true, data: savedWeather };
 
         } catch (error) {
             console.error('Error When Data Adding...', error);
@@ -54,7 +54,7 @@ export class WeatherService {
                 return cacheData;
             }
             console.log('Cache Miss, Fetching from DB...');
-        
+
             const oneHourAgo = new Date();
             oneHourAgo.setHours(oneHourAgo.getHours() - 1);
 
@@ -97,8 +97,13 @@ export class WeatherService {
     }
 
     async deleteWeatherById(id: string) {
-        await this.cacheManager.del('weatherHistory');
-        return this.weatherModel.findByIdAndDelete(id);
+        try {
+            await this.cacheManager.del('weatherHistory');
+            return this.weatherModel.findByIdAndDelete(id);
+        } catch (error) {
+            console.error('Error To Delete Data ', id);
+            return { error: "Error To Delete:- " + id };
+        }
     }
 
 }
