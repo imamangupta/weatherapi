@@ -12,13 +12,13 @@ export class WeatherService {
 
     async getWeatherById(place: string) {
         try {
-
+            console.log("inside service add");
             const response = await fetch(
                 `https://api.openweathermap.org/data/2.5/weather?q=${place}&appid=c38c2ab810a1f5c88861c5b2659d9a5b&units=metric`
             );
 
             if (!response.ok) {
-                throw new Error(`Weather API error: ${response.statusText}`);
+                throw new Error(`Weather API error: ${response.statusText}, ${process.env.WEATHER_API_KEY}`);
             }
 
             const weatherApiData = await response.json();
@@ -47,7 +47,7 @@ export class WeatherService {
 
     async getHistory() {
         try {
-
+            console.log("inside service");
             const cacheData = await this.cacheManager.get('weatherHistory');
             if (cacheData) {
                 console.log('Cache Hit:', cacheData);

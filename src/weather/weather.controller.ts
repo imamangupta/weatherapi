@@ -2,21 +2,22 @@ import { Body, Controller, Delete, Get, Param, Patch, Query, UseInterceptors } f
 import { WeatherService } from './weather.service';
 import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
 
-// @UseInterceptors(CacheInterceptor)
+@UseInterceptors(CacheInterceptor)
 @Controller('weather')
 export class WeatherController {
     constructor(private weatherService: WeatherService) { }
     
-    // @CacheTTL(0)
-    // @CacheKey('weatherHistory')
     
+    // @CacheTTL(60 * 1000)
     @Get()
     getWeatherById(@Query('place') place: string) {
         return this.weatherService.getWeatherById(place);
     }
-
+    
+    @CacheKey('weatherHistory')
     @Get("history")
     getHistory() {
+        console.log("inside controller");
         return this.weatherService.getHistory();
     }
 

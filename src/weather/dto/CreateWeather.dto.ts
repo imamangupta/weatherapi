@@ -5,7 +5,6 @@ import {
 
 export class CreateWeatherDto {
     
-    @IsNotEmpty()
     @IsString()
     description?: string;
     
@@ -13,11 +12,9 @@ export class CreateWeatherDto {
     @IsString()
     temperature?: string;
 
-    @IsNotEmpty()
     @IsString()
     humidity?: string;
 
-    @IsNotEmpty()
     @IsString()
     windSpeed?: string;
     
@@ -25,7 +22,6 @@ export class CreateWeatherDto {
     @IsString()
     place?: string;
     
-    @IsNotEmpty()
     @IsString()
     visibility?: string;
 }
