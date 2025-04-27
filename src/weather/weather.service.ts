@@ -1,14 +1,155 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, HttpStatus, HttpException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Cache } from 'cache-manager';
 import { Model } from 'mongoose';
 import { Weather } from 'src/schemas/Weather.schemas';
 
+
+interface WeatherData {
+    description: string;
+    temperature: string;
+    humidity: string;
+    windSpeed: string;
+    place: string;
+    visibility: string;
+}
+
 @Injectable()
 export class WeatherService {
 
+
+
     constructor(@InjectModel(Weather.name) private weatherModel: Model<Weather>,
         @Inject('CACHE_MANAGER') private cacheManager: Cache) { }
+
+
+
+
+    async getWeatherByCity(city: string) {
+        try {
+            console.log(`Adding weather data for ${city}`);
+            
+            const cacheData = await this.cacheManager.get<{ createdAt: string }>(city);
+
+            if (cacheData) {
+    
+                const dataCreationTime = new Date(cacheData.createdAt).getTime();
+                const currentTime = new Date().getTime();
+                const sixHoursInMs = 6 * 60 * 60 * 1000; 
+                
+                if (currentTime - dataCreationTime < sixHoursInMs) {
+                    console.log('Cache Hit (current):', cacheData);
+                    return cacheData;
+                } else {
+                    console.log('Cache expired, fetching new data');
+                    await this.cacheManager.del(city);
+                }
+            }
+
+            const response = await fetch(
+                `${process.env.WEATHER_URL}?q=${city}&appid=${process.env.WEATHER_API_KEY}&units=metric`
+            );
+
+            if (!response.ok) {
+                throw new Error(`Weather API error: ${response.statusText}`);
+            }
+
+            const weatherApiData = await response.json();
+            const weatherData: WeatherData = {
+                description: weatherApiData.weather[0].description,
+                temperature: `${weatherApiData.main.temp}°C`,
+                humidity: `${weatherApiData.main.humidity}%`,
+                windSpeed: `${weatherApiData.wind.speed} km/h`,
+                place: weatherApiData.name,
+                visibility: `${weatherApiData.visibility / 1000} km`
+            };
+
+            const newWeather = new this.weatherModel(weatherData);
+            const savedWeather = await newWeather.save();
+            await this.cacheManager.set(city, savedWeather);
+
+            return savedWeather;
+
+        } catch (error) {
+            console.error('Error When Getting Weather Data:', error);
+            throw new HttpException("No data found for the city.", HttpStatus.NOT_FOUND);
+        }
+    }
+
+
+
+
+    async deleteWeatherByCity(city: string) {
+        try {
+            console.log(`Deleting weather data for  ${city}`);
+            await this.cacheManager.del(city);
+
+            const weatherData = await this.weatherModel.findOneAndDelete({ place: city });
+            if (!weatherData) { 
+                throw new HttpException("No data found for the city.", HttpStatus.NOT_FOUND);
+            }
+          
+            return {status: true, message: "Weather data deleted successfully.", data: city};
+
+        } catch (error) {
+            console.error('Error When Getting Weather Data:', error);
+            throw new HttpException("No data found for the city.", HttpStatus.NOT_FOUND);
+        }
+    }
+
+
+
+    
+
+    async updateWeatherByCity(city: string) {
+        try {
+            console.log(`Updating weather data for ${city}`);
+            await this.cacheManager.del(city);
+            
+            const response = await fetch(
+                `${process.env.WEATHER_URL}?q=${city}&appid=${process.env.WEATHER_API_KEY}&units=metric`
+            );
+    
+            if (!response.ok) {
+                throw new Error(`Weather API error: ${response.statusText}`);
+            }
+            
+            const weatherApiData = await response.json();
+            const weatherData: WeatherData = {
+                description: weatherApiData.weather[0].description,
+                temperature: `${weatherApiData.main.temp}°C`,
+                humidity: `${weatherApiData.main.humidity}%`,
+                windSpeed: `${weatherApiData.wind.speed} km/h`,
+                place: weatherApiData.name,
+                visibility: `${weatherApiData.visibility / 1000} km`
+            };
+            
+            const updatedWeather = await this.weatherModel.findOneAndUpdate(
+                { place: city },
+                weatherData
+               
+            );
+            
+            await this.cacheManager.set(city, weatherData);
+          
+            return {
+                status: true, 
+                message: "Weather data updated successfully.", 
+                data: updatedWeather
+            };
+    
+        } catch (error) {
+            console.error('Error when updating weather data:', error);
+            throw new HttpException("Failed to update weather data for the city.", HttpStatus.NOT_FOUND);
+        }
+    }
+
+
+
+
+
+
+
 
     async getWeatherById(place: string) {
         try {

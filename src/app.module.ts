@@ -4,9 +4,9 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CacheModule } from '@nestjs/cache-manager';
-import { redisStore } from 'cache-manager-redis-yet';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-// import { redisStore } from 'cache-manager-redis-store';
+import { redisStore } from 'cache-manager-redis-store';
+// import { redisStore } from 'cache-manager-redis-yet';
 
 @Module({
   imports: [

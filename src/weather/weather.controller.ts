@@ -1,21 +1,37 @@
-import { Body, Controller, Delete, Get, Param, Patch, Query, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Put, Query, UseInterceptors } from '@nestjs/common';
 import { WeatherService } from './weather.service';
 import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
 
-@UseInterceptors(CacheInterceptor)
+
+// @UseInterceptors(CacheInterceptor)
 @Controller('weather')
 export class WeatherController {
     constructor(private weatherService: WeatherService) { }
     
-    
-    // @CacheTTL(60 * 1000)
+   
+    @Get("get")
+    getWeatherByCity(@Query('city') city: string) {
+        return this.weatherService.getWeatherByCity(city);
+    }
+
+    @Delete("delete")
+    deleteWeatherByCity(@Query('city') city: string) {
+        return this.weatherService.deleteWeatherByCity(city);
+    }
+
+    @Put("update")
+    updateWeatherByCity(@Query('city') city: string) {
+        return this.weatherService.updateWeatherByCity(city);
+    }
+
+
     @Get()
     getWeatherById(@Query('place') place: string) {
         return this.weatherService.getWeatherById(place);
     }
     
-    @CacheKey('weatherHistory')
-    @Get("history")
+    // @CacheKey('weatherHistory')
+    // @Get("history")
     getHistory() {
         console.log("inside controller");
         return this.weatherService.getHistory();
