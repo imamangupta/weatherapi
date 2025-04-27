@@ -37,7 +37,7 @@ export class WeatherService {
             const savedWeather = await newWeather.save();
             await this.cacheManager.del('weatherHistory');
 
-            return `Weather Data Added: ${JSON.stringify(savedWeather)}`;
+            return {status: true, data:savedWeather};
 
         } catch (error) {
             console.error('Error When Data Adding...', error);
